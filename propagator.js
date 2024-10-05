@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-const keplerParams = {
+export const keplerParams = {
     mercury: {
         t0: {
             a: 0.38709927,
@@ -147,13 +147,17 @@ const keplerParams = {
     },
 };
 
+const toRad = Math.PI / 180;
+const sinDeg = deg => Math.sin(toRad * deg);
+const cosDeg = deg => Math.cos(toRad * deg);
+
 // planetParams is one of the sub-objects of params, time is in centuries since the J2000 epoch
 // tol defines the precision of the estimation, in maximum possible degrees of error
 // return value is the coordinates of the planet at the given time in the J2000 coordinate system
 // see https://ssd.jpl.nasa.gov/planets/approx_pos.html
 // NOTE: this currently uses the 1800AD-2050AD method and therefore is not accurate for times
 // outside of that range
-function findCoords(planetParams, time, tol) {
+export function findCoords(planetParams, time, tol) {
     let curr = {};
     for (let property in planetParams.t0) {
         curr[property] = planetParams.t0[property] + time * planetParams.rate[property];
@@ -163,24 +167,24 @@ function findCoords(planetParams, time, tol) {
     let M = (curr.L - curr.longPeri) % 360;
     if (M > 180) M -= 360;
     // iterate Newton's method to approximate the solution to Kepler's equation
-    const eStar = 180 / Math.PI * Math.E;
-    let E = M + eStar * Math.sin(M);
+    const eStar = curr.e / toRad;
+    let E = M + eStar * sinDeg(M);
     do {
-        let dM = M - (E - eStar * Math.sin(E));
-        let dE = dM / (1 - Math.E * Math.cos(E));
+        var dM = M - (E - eStar * sinDeg(E));
+        var dE = dM / (1 - curr.e * cosDeg(E));
         E += dE;
     } while (Math.abs(dE) > tol);
     // E is now within tol degrees of the right answer
 
-    const yCoeff = Math.sqrt(1 - Math.E * Math.E);
-    let xPrime = curr.a * (Math.cos(E) - Math.E);
-    let yPrime = curr.a * yCoeff * Math.sin(E);
-    let cosPeri = Math.cos(argPeri);
-    let cosNode = Math.cos(curr.longNode);
-    let cosI = Math.cos(curr.I);
-    let sinPeri = Math.sin(argPeri);
-    let sinNode = Math.sin(curr.longNode);
-    let sinI = Math.sin(curr.I);
+    const yCoeff = Math.sqrt(1 - curr.e);
+    let xPrime = curr.a * (cosDeg(E) - curr.e);
+    let yPrime = curr.a * yCoeff * sinDeg(E);
+    let cosPeri = cosDeg(argPeri);
+    let cosNode = cosDeg(curr.longNode);
+    let cosI = cosDeg(curr.I);
+    let sinPeri = sinDeg(argPeri);
+    let sinNode = sinDeg(curr.longNode);
+    let sinI = sinDeg(curr.I);
 
     let xEcl = (cosPeri * cosNode - sinPeri * sinNode * cosI) * xPrime
         + (- sinPeri * cosNode - cosPeri * sinNode * cosI) * yPrime;
