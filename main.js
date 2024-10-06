@@ -42,7 +42,7 @@ function animate() {
     for (let property in planetsParams) {
         let predictedCoords = findCoords(
             planetsParams[property],
-            clock.getElapsedTime() / 500,
+            clock.getElapsedTime() / 700,
             0.0000001,
         );
         planets[property].position.copy(predictedCoords);
@@ -52,17 +52,20 @@ function animate() {
 }
 renderer.setAnimationLoop( animate );
 
-// BEGIN PASTE
 // from https://threejs.org/docs/index.html?q=scene#api/en/core/Raycaster
 const raycaster = new THREE.Raycaster();
-const pointer = new THREE.Vector2();
-function onPointerMove( event ) {
+// whether the pointer has moved since it was initially presses down
+var pointerHasMoved = false;
+renderer.domElement.addEventListener( 'pointerdown', () => { pointerHasMoved = false; } );
+renderer.domElement.addEventListener( 'pointermove', () => { pointerHasMoved = true; } );
+function updateTarget(event) {
+    if (pointerHasMoved || event.buttons) return;
     // calculate pointer position in normalized device coordinates
     // (-1 to +1) for both components
-    pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-}
-function updateTarget() {
+    let pointer = new THREE.Vector2(
+        ( event.clientX / window.innerWidth ) * 2 - 1,
+        - ( event.clientY / window.innerHeight ) * 2 + 1
+    );
     // update the picking ray with the camera and pointer position
     raycaster.setFromCamera( pointer, camera );
     // calculate objects intersecting the picking ray
@@ -73,6 +76,5 @@ function updateTarget() {
         controls.target = sun;
     }
 }
-window.addEventListener( 'pointermove', onPointerMove );
-window.addEventListener( 'keypress', updateTarget );
-// END PASTE
+renderer.domElement.addEventListener( 'pointerup', updateTarget );
+
