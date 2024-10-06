@@ -1,0 +1,33 @@
+#dropdown {
+    position: absolute;
+}
+
+.slidecontainer {
+    width: 100%; /*width of outside container*/
+    top: 0;
+    background-color: #eeeeee;
+
+}
+
+.slider {
+    -webkit-appearance: none;  /* Override default CSS styles */
+    appearance: none; /*correct?*/
+    background: #d3d3d3; /* Grey background */
+    outline: none; /* Remove outline */
+    width: 100%; /* Full-width */
+    height: 25px; /* Specified height */
+    /*-webkit-transition: .2s; transition to not lock to either side
+    transition: opacity .2s;*/
+}
+
+/*text styling for slider*/
+details > summary {
+    width: 200px;
+    background-color: #eeeeee;
+    border: none;
+    cursor: pointer;
+  }
+
+details > p {
+    background-color: #eeeeee;
+}
