@@ -3,6 +3,12 @@ import { sunParams, planetsParams, findCoords } from '/propagator.js';
 import { OrreryControls } from '/controls.jsx';
 
 
+const _LAYERS = {
+    ALL: 0,
+    PLANETS: 1,
+    COLLIDERS: 2,
+};
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 const renderer = new THREE.WebGLRenderer();
@@ -16,20 +22,34 @@ const makePlanet = (diameter, texturePath) => {
     let radius = 0.03 * Math.log( 4 + diameter / planetsParams.mercury.misc.diameter );
     // 32 and 16 magic numbers are arbitrary and determine tri count for the mesh. Can be adjusted
     // as needed
-    let geometry = new THREE.SphereGeometry( radius, 32, 16 );
-    let texture = textureLoader.load(texturePath);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    let material = new THREE.MeshBasicMaterial({ map: texture });
-    return new THREE.Mesh( geometry, material );
+    let planetGeometry = new THREE.SphereGeometry( radius, 32, 16 );
+    let planetTexture = textureLoader.load(texturePath);
+    planetTexture.colorSpace = THREE.SRGBColorSpace;
+    let planetMaterial = new THREE.MeshBasicMaterial({ map: planetTexture });
+    let planet = new THREE.Mesh( planetGeometry, planetMaterial );
+    planet.layers.enable(_LAYERS.PLANETS);
+
+    let colliderGeometry = new THREE.SphereGeometry( radius * 2.5, 8, 4 );
+    let collider = new THREE.Mesh( colliderGeometry );
+    collider.layers.enable(_LAYERS.COLLIDERS);
+
+    return [planet, collider];
 };
 var planets = {}
 for (let property in planetsParams) {
-    let planet = makePlanet( planetsParams[property].misc.diameter, `/${property}.jpeg` );
+    let [planet, collider] = makePlanet(
+        planetsParams[property].misc.diameter,
+        `/${property}.jpeg`
+    );
+    planet.add(collider);
     planets[property] = planet;
     scene.add(planet);
 } // planets is now populated
-const sun = makePlanet( sunParams.diameter, '/sun.jpeg' );
+const [sun, _] = makePlanet( sunParams.diameter, '/sun.jpeg' );
+sun.layers.enable(_LAYERS.COLLIDERS);
 scene.add(sun);
+camera.layers.disable(_LAYERS.ALL);
+camera.layers.enable(_LAYERS.PLANETS);
 camera.position.set(0, 1, 10);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
@@ -54,6 +74,7 @@ renderer.setAnimationLoop( animate );
 
 // from https://threejs.org/docs/index.html?q=scene#api/en/core/Raycaster
 const raycaster = new THREE.Raycaster();
+raycaster.layers.set(_LAYERS.COLLIDERS);
 // whether the pointer has moved since it was initially presses down
 var pointerHasMoved = false;
 renderer.domElement.addEventListener( 'pointerdown', () => { pointerHasMoved = false; } );
@@ -70,11 +91,21 @@ function updateTarget(event) {
     raycaster.setFromCamera( pointer, camera );
     // calculate objects intersecting the picking ray
     const intersects = raycaster.intersectObjects( scene.children );
-    if ( intersects.length > 0 ) {
-        controls.target = intersects[0].object;
-    } else {
-        controls.target = sun;
+    console.log(intersects);
+    let target = sun;
+    for (let intersection of intersects) {
+        target = intersection.object;
+        // if we hit a planet's collider then we need to get its parent planet
+        if (target !== sun) {
+            target = target.parent;
+        }
+        // if we're focused on a planet right now and the raycast hit it, the user probably actually
+        // wanted to move to another planet
+        if (target !== sun && target !== controls.target) {
+            break;
+        }
     }
+    controls.target = target;
 }
 renderer.domElement.addEventListener( 'pointerup', updateTarget );
 

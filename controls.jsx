@@ -6,14 +6,9 @@ import {
     Spherical,
 } from 'three';
 
+
 const rotateSpeed = 0.005;
 const dollySpeed = 1.0003;
-
-const _STATE = {
-    NONE: 0,
-    ROTATE: 1,
-    DOLLY: 2,
-};
 
 export class OrreryControls extends Controls {
     target;
@@ -22,7 +17,6 @@ export class OrreryControls extends Controls {
     constructor( object, domElement = null, target ) {
         super( object, domElement );
 
-        this.state = _STATE.NONE;
         this.target = target;
         this.offset = new Spherical( 1, 1, 0 );
         // we don't allow panning, so that there's always an object which is the target
