@@ -54,7 +54,7 @@ var planets = {}
 for (let property in planetsParams) {
     let [planet, collider] = makePlanet(
         planetsParams[property].misc.diameter,
-        `/${property}.jpeg`
+        `${property}.jpeg`
     );
     planet.add(collider);
     planets[property] = planet;
