@@ -3,11 +3,26 @@ import { sunParams, planetsParams, findCoords } from '/propagator.js';
 import { OrreryControls } from '/controls.jsx';
 
 
+// Set up DOM controls
+
+const speedInput = document.getElementById('speedInput');
+const speedOutput = document.getElementById('speedOutput');
+speedOutput.innerHTML = speedInput.value;
+speedInput.oninput = function() {
+    speedOutput.innerHTML = this.value;
+}
+
+
+// Set up threejs scene
+
 const _LAYERS = {
     ALL: 0,
     PLANETS: 1,
     COLLIDERS: 2,
 };
+
+// current time displayed, in centuries since the J2000 epoch
+var tCentury = 0;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -59,10 +74,12 @@ const clock = new THREE.Clock();
 
 
 function animate() {
+    // divide by 1200 to convert delta in seconds to delta in centuries
+    tCentury += clock.getDelta() * speedInput.value / 1200 ;
     for (let property in planetsParams) {
         let predictedCoords = findCoords(
             planetsParams[property],
-            clock.getElapsedTime() / 700,
+            tCentury,
             0.0000001,
         );
         planets[property].position.copy(predictedCoords);
@@ -72,7 +89,7 @@ function animate() {
 }
 renderer.setAnimationLoop( animate );
 
-// from https://threejs.org/docs/index.html?q=scene#api/en/core/Raycaster
+// modified from https://threejs.org/docs/index.html?q=scene#api/en/core/Raycaster
 const raycaster = new THREE.Raycaster();
 raycaster.layers.set(_LAYERS.COLLIDERS);
 // whether the pointer has moved since it was initially presses down
@@ -91,7 +108,6 @@ function updateTarget(event) {
     raycaster.setFromCamera( pointer, camera );
     // calculate objects intersecting the picking ray
     const intersects = raycaster.intersectObjects( scene.children );
-    console.log(intersects);
     let target = sun;
     for (let intersection of intersects) {
         target = intersection.object;

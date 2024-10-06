@@ -1,32 +1,20 @@
-<!DOCTYPE html> 
-<html lang="en"> 
-<head> 
-    <meta charset="utf-8"> 
-    <title>My first three.js app</title> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>My first three.js app</title>
     <link rel="stylesheet" href="stylesheet.css">
-    <style> body { margin: 0; } </style> 
-</head> 
-<body> 
-    <script type="module" src="/main.js"></script> 
+    <style> body { margin: 0; } </style>
+</head>
+<body>
+    <script type="module" src="/main.js"></script>
     <details id="dropdown">
         <summary>Controls</summary>
         <!--slider info from w3schools: https://www.w3schools.com/howto/howto_js_rangeslider.asp-->
         <div class="slidecontainer">
-            <p>Speed</p> <input type="range" min="0" max="1" value="0.5" class="slider" id="myRange">
-            <p>Speed: <span id="demo"></span></p>
+            <p>Speed</p> <input type="range" min="0" max="12" value="1" class="slider" step="0.01" id="speedInput">
+            <p>Speed: <span id="speedOutput"></span> months / sec</p>
         </div>
     </details>
-    <script>
-        var slider = document.getElementById("myRange");
-        var output = document.getElementById("demo")
-        output.innerHTML = slider.value;
-        //smaller step size means smoother dragging
-        document.getElementById("myRange").step = "0.001";
-
-        //update current slider value each time you drag it
-        slider.oninput = function() {
-            output.innerHTML = this.value;
-        }
-    </script>
-</body> 
+</body>
 </html>
