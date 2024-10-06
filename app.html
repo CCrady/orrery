@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Orrery Web App</title>
+    <link rel="stylesheet" href="stylesheet.css">
+    <style> body { margin: 0; } </style>
+</head>
+<body>
+    <script type="module" src="/main.js"></script>
+    <details id="dropdown">
+        <summary>Controls</summary>
+        <div>
+          <a href="/index.html">Go home</a>
+        </div>
+        <!--slider info from w3schools: https://www.w3schools.com/howto/howto_js_rangeslider.asp-->
+        <div class="slidecontainer">
+            <p>Speed</p> <input type="range" min="0" max="12" value="1" class="slider" step="0.01" id="speedInput">
+            <p>Speed: <span id="speedOutput"></span> months / sec</p>
+        </div>
+    </details>
+</body>
+</html>
