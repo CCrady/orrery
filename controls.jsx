@@ -24,8 +24,6 @@ export class OrreryControls extends Controls {
         this.touches = { ONE: TOUCH.ROTATE, TWO: null };
 
         this._onMouseMove = onMouseMove.bind(this);
-        //this._onMouseUp = onMouseUp.bind(this);
-        //this._onMouseDown = onMouseDown.bind(this);
         this._onMouseWheel = onMouseWheel.bind(this);
 
         if (this.domElement) this.connect();
@@ -51,12 +49,16 @@ export class OrreryControls extends Controls {
     }
 
     update() {
+        // make sure we can only zoom in so far, to avoid clipping
+        this.offset.radius = Math.max(
+            this.offset.radius,
+            this.target.geometry.parameters.radius + this.object.near,
+        );
         let cameraPosition = new Vector3()
             .setFromSpherical(this.offset)
             .add(this.target.position);
         this.object.position.copy(cameraPosition);
         this.object.lookAt(this.target.position);
-        //console.log(cameraPosition);
     }
 }
 
