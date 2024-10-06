@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { sunParams, planetsParams, findCoords } from '/propagator.js';
+import { OrreryControls } from '/controls.jsx';
 
 
 const scene = new THREE.Scene();
@@ -28,12 +28,12 @@ for (let property in planetsParams) {
     planets[property] = planet;
     scene.add(planet);
 } // planets is now populated
-const sun =  makePlanet( sunParams.diameter, '/sun.jpeg' );
+const sun = makePlanet( sunParams.diameter, '/sun.jpeg' );
 scene.add(sun);
 camera.position.set(0, 1, 10);
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-const controls = new OrbitControls( camera, renderer.domElement );
+const controls = new OrreryControls( camera, renderer.domElement, sun );
 
 const clock = new THREE.Clock();
 
@@ -42,14 +42,37 @@ function animate() {
     for (let property in planetsParams) {
         let predictedCoords = findCoords(
             planetsParams[property],
-            clock.getElapsedTime() / 300,
+            clock.getElapsedTime() / 500,
             0.0000001,
         );
-        // there doesn't seem to be a method to set the position to a given Vector3 ??
-        planets[property].position.set( ...predictedCoords.toArray() );
+        planets[property].position.copy(predictedCoords);
     }
     controls.update();
     renderer.render( scene, camera );
 }
 renderer.setAnimationLoop( animate );
 
+// BEGIN PASTE
+// from https://threejs.org/docs/index.html?q=scene#api/en/core/Raycaster
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+function onPointerMove( event ) {
+    // calculate pointer position in normalized device coordinates
+    // (-1 to +1) for both components
+    pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+}
+function updateTarget() {
+    // update the picking ray with the camera and pointer position
+    raycaster.setFromCamera( pointer, camera );
+    // calculate objects intersecting the picking ray
+    const intersects = raycaster.intersectObjects( scene.children );
+    if ( intersects.length > 0 ) {
+        controls.target = intersects[0].object;
+    } else {
+        controls.target = sun;
+    }
+}
+window.addEventListener( 'pointermove', onPointerMove );
+window.addEventListener( 'keypress', updateTarget );
+// END PASTE
