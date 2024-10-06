@@ -1,7 +1,25 @@
 import * as THREE from 'three';
 
-export const keplerParams = {
+// PLANET:
+//   diameter: km
+// ORBIT:
+//   a (semi-major axis): au
+//   e (eccentricity): rad
+//   I (inclination): deg
+//   L (mean longitude): deg
+//   longPeri (longitude of perihelion): deg
+//   longNode (longitude of ascending node): deg
+//   rates: <unit> / century
+
+export const sunParams = {
+    diameter: 1391400,
+};
+
+export const planetsParams = {
     mercury: {
+        misc: {
+            diameter: 4879,
+        },
         t0: {
             a: 0.38709927,
             e: 0.20563593,
@@ -20,6 +38,9 @@ export const keplerParams = {
         },
     },
     venus: {
+        misc: {
+            diameter: 12104,
+        },
         t0: {
             a: 0.72333566,
             e: 0.00677672,
@@ -37,7 +58,11 @@ export const keplerParams = {
             longNode: -0.27769418,
         },
     },
-    earthmoon: {
+    // actually the earth-moon barycenter
+    earth: {
+        misc: {
+            diameter: 12756,
+        },
         t0: {
             a: 1.00000261,
             e: 0.01671123,
@@ -56,6 +81,9 @@ export const keplerParams = {
         },
     },
     mars: {
+        misc: {
+            diameter: 6792,
+        },
         t0: {
             a: 1.52371034,
             e: 0.09339410,
@@ -74,6 +102,9 @@ export const keplerParams = {
         },
     },
     jupiter: {
+        misc: {
+            diameter: 142984,
+        },
         t0: {
             a: 5.20288700,
             e: 0.04838624,
@@ -92,6 +123,9 @@ export const keplerParams = {
         },
     },
     saturn: {
+        misc: {
+            diameter: 120536,
+        },
         t0: {
             a: 9.53667594,
             e: 0.05386179,
@@ -110,6 +144,9 @@ export const keplerParams = {
         },
     },
     uranus: {
+        misc: {
+            diameter: 51118,
+        },
         t0: {
             a: 19.18916464,
             e: 0.04725744,
@@ -128,6 +165,9 @@ export const keplerParams = {
         },
     },
     neptune: {
+        misc: {
+            diameter: 49528,
+        },
         t0: {
             a: 30.06992276,
             e: 0.00859048,
@@ -151,16 +191,17 @@ const toRad = Math.PI / 180;
 const sinDeg = deg => Math.sin(toRad * deg);
 const cosDeg = deg => Math.cos(toRad * deg);
 
-// planetParams is one of the sub-objects of params, time is in centuries since the J2000 epoch
-// tol defines the precision of the estimation, in maximum possible degrees of error
+// keplerParams is one of the sub-objects of planetsParams
+// time is in centuries since the J2000 epoch
+// tol defines the precision of the equation solver, in maximum possible degrees of error
 // return value is the coordinates of the planet at the given time in the J2000 coordinate system
 // see https://ssd.jpl.nasa.gov/planets/approx_pos.html
 // NOTE: this currently uses the 1800AD-2050AD method and therefore is not accurate for times
 // outside of that range
-export function findCoords(planetParams, time, tol) {
+export function findCoords(keplerParams, time, tol) {
     let curr = {};
-    for (let property in planetParams.t0) {
-        curr[property] = planetParams.t0[property] + time * planetParams.rate[property];
+    for (let property in keplerParams.t0) {
+        curr[property] = keplerParams.t0[property] + time * keplerParams.rate[property];
     } // curr now contains the current values of a, e, I, etc.
 
     let argPeri = curr.longPeri - curr.longNode;
@@ -191,6 +232,8 @@ export function findCoords(planetParams, time, tol) {
     let yEcl = (cosPeri * sinNode + sinPeri * cosNode * cosI) * xPrime
         + (- sinPeri * sinNode + cosPeri * cosNode * cosI) * yPrime;
     let zEcl = (sinPeri * sinI) * xPrime + (cosPeri * sinI) * yPrime;
-    return new THREE.Vector3(xEcl, yEcl, zEcl);
+    // NASA equations use a Z-up system, threejs uses a Y-up system
+    // TODO: figure out if this is the correct handedness
+    return new THREE.Vector3(xEcl, zEcl, yEcl);
 }
 
