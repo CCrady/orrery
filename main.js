@@ -60,7 +60,7 @@ for (let property in planetsParams) {
     planets[property] = planet;
     scene.add(planet);
 } // planets is now populated
-const [sun, _] = makePlanet( sunParams.diameter, '/sun.jpeg' );
+const [sun, _] = makePlanet( sunParams.diameter, 'sun.jpeg' );
 sun.layers.enable(_LAYERS.COLLIDERS);
 scene.add(sun);
 camera.layers.disable(_LAYERS.ALL);
