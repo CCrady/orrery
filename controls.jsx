@@ -4,24 +4,29 @@ import {
     TOUCH,
     Vector3,
     Spherical,
+    Clock,
 } from 'three';
 
 
-const rotateSpeed = 0.005;
-const dollySpeed = 1.0003;
-
 export class OrreryControls extends Controls {
-    target;
-    offset;
-    state;
-    constructor( object, domElement = null, target ) {
+    offset = new Spherical( 1, 1, 0 );
+    rotateSpeed = 0.005;
+    dollySpeed = 1.0003;
+    easingSpeed = 0.5;
+    easingFunction = (t) => {
+        return 1 - Math.pow(1 - t, 3);
+    };
+    // we don't allow panning, so that there's always an object which is the target
+    mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: null };
+    touches = { ONE: TOUCH.ROTATE, TWO: null };
+    constructor( object, domElement = null, target, params = {} ) {
         super( object, domElement );
 
-        this.target = target;
-        this.offset = new Spherical( 1, 1, 0 );
-        // we don't allow panning, so that there's always an object which is the target
-        this.mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.DOLLY, RIGHT: null };
-        this.touches = { ONE: TOUCH.ROTATE, TWO: null };
+        Object.assign(this, params);
+
+        this._target = target;
+        this._oldPosition = new Vector3();
+        this._clock = new Clock();
 
         this._onMouseMove = onMouseMove.bind(this);
         this._onMouseWheel = onMouseWheel.bind(this);
@@ -54,23 +59,45 @@ export class OrreryControls extends Controls {
             this.offset.radius,
             this.target.geometry.parameters.radius + this.object.near,
         );
-        let cameraPosition = new Vector3()
+
+        // hacky way of getting the camera to point in the right direction
+        // in theory it should be possible to directly set the camera's rotation to the inverse of
+        // the offset's orientation, but I couldn't figure out the right conversions
+        let invLerpFactor = 1 - this.easingFunction(
+            Math.min( 1, this._clock.getElapsedTime() / this.easingSpeed )
+        );
+        let fromPosition = this._oldPosition.clone();
+        let toPosition = new Vector3()
             .setFromSpherical(this.offset)
             .add(this.target.position);
-        this.object.position.copy(cameraPosition);
-        this.object.lookAt(this.target.position);
+        let invDeltaPosition = fromPosition.clone().sub(toPosition).multiplyScalar(invLerpFactor);
+        let tweenPosition = toPosition.clone().add(invDeltaPosition);
+        let lookPosition = this.target.position.clone().add(invDeltaPosition);
+
+        this.object.position.copy(tweenPosition);
+        this.object.lookAt(lookPosition);
+    }
+
+    set target(target) {
+        this._oldPosition = this.object.position.clone();
+        this._target = target;
+        this._clock.start();
+    }
+
+    get target() {
+        return this._target;
     }
 }
 
 function onMouseMove(event) {
     if (event.buttons & 1) {
-        this.offset.phi   -= event.movementY * rotateSpeed;
-        this.offset.theta -= event.movementX * rotateSpeed;
+        this.offset.phi   -= event.movementY * this.rotateSpeed;
+        this.offset.theta -= event.movementX * this.rotateSpeed;
         this.offset.makeSafe();
     }
 }
 
 function onMouseWheel(event) {
     event.preventDefault();
-    this.offset.radius *= Math.pow(dollySpeed, event.deltaY);
+    this.offset.radius *= Math.pow(this.dollySpeed, event.deltaY);
 }
