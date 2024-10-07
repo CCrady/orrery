@@ -5,12 +5,24 @@ import { OrreryControls } from '/controls.jsx';
 
 // Set up DOM controls
 
+var settings = {
+    speed: 1,
+};
+
+const numberFormatter = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+});
+
 const speedInput = document.getElementById('speedInput');
 const speedOutput = document.getElementById('speedOutput');
-speedOutput.innerHTML = speedInput.value;
 speedInput.oninput = function() {
-    speedOutput.innerHTML = this.value;
-}
+    let speed = Math.pow(2, speedInput.value) - 1;
+    speedOutput.textContent = numberFormatter.format(speed);
+    settings.speed = speed;
+};
+speedInput.oninput();
+
 
 
 // Set up threejs scene

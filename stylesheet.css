@@ -8,7 +8,7 @@
     font-family: sans-serif;
 }
 
-.slidecontainer {
+.slidercontainer {
     width: 100%;
 }
 
@@ -16,7 +16,6 @@
     width: 100%;
 }
 
-/*text styling for slider*/
 details > summary {
     width: 200px;
     border: none;
@@ -39,10 +38,10 @@ h2 {
 }
 
 .centered {
-	/*put a box around the career title */
-	text-align: center;
-	border-style: solid;
-	border-width: medium;
-	border-radius: 5px;
-	background-color: #aaa;
+    text-align: center;
+    border-style: solid;
+    border-width: medium;
+    border-radius: 5px;
+    background-color: #aaa;
 }
+
