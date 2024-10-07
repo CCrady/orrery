@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 
 // PLANET:
 //   diameter: km
@@ -234,6 +234,6 @@ export function findCoords(keplerParams, time, tol) {
     let zEcl = (sinPeri * sinI) * xPrime + (cosPeri * sinI) * yPrime;
     // NASA equations use a Z-up system, threejs uses a Y-up system
     // flip one of the horizontal axes to keep the right handedness
-    return new THREE.Vector3(xEcl, zEcl, -yEcl);
+    return new Vector3(xEcl, zEcl, -yEcl);
 }
 
