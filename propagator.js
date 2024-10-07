@@ -233,7 +233,7 @@ export function findCoords(keplerParams, time, tol) {
         + (- sinPeri * sinNode + cosPeri * cosNode * cosI) * yPrime;
     let zEcl = (sinPeri * sinI) * xPrime + (cosPeri * sinI) * yPrime;
     // NASA equations use a Z-up system, threejs uses a Y-up system
-    // TODO: figure out if this is the correct handedness
-    return new THREE.Vector3(xEcl, zEcl, yEcl);
+    // flip one of the horizontal axes to keep the right handedness
+    return new THREE.Vector3(xEcl, zEcl, -yEcl);
 }
 
