@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { sunParams, planetsParams, findCoords } from '/propagator.js';
+import { sunParams, planetsParams, findCoords } from '/propagator.jsx';
 import { OrreryControls } from '/controls.jsx';
 
 
