@@ -79,6 +79,7 @@ export class OrreryControls extends Controls {
     }
 
     set target(target) {
+        if (this._target === target) return;
         this._oldPosition = this.object.position.clone();
         this._target = target;
         this._clock.start();
