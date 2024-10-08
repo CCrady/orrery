@@ -43,6 +43,11 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
 const textureLoader = new THREE.TextureLoader();
+// TODO: align the skymap to the milky way's real position
+const skymap = textureLoader.load('milky_way.jpg');
+skymap.mapping = THREE.EquirectangularReflectionMapping;
+skymap.colorSpace = THREE.SRGBColorSpace;
+scene.background = skymap;
 const makePlanet = (diameter, texturePath) => {
     // TODO: play with this function to strike a balance between large enough to see and small
     // enough that the sun doesn't occlude mercury
@@ -62,7 +67,7 @@ const makePlanet = (diameter, texturePath) => {
 
     return [planet, collider];
 };
-var planets = {}
+var planets = {};
 for (let property in planetsParams) {
     let [planet, collider] = makePlanet(
         planetsParams[property].misc.diameter,
