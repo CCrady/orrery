@@ -12,6 +12,7 @@ export default defineConfig({
                 main: resolve(__dirname, 'index.html'),
                 app: resolve(__dirname, 'app.html'),
                 learn: resolve(__dirname, 'learn.html'),
+                credits: resolve(__dirname, 'credits.hrml'),
             },
         },
     },
